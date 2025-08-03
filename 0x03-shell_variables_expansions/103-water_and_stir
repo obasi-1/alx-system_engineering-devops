@@ -1,2 +1,2 @@
 #!/bin/bash
-value=$(( $(expr index "$base_chars" "$char") - 1 ))
+echo "obase=8; ibase=5; $(echo "$WATER" | tr 'aertw' '01234') + ibase=4; $(echo "$STIR" | tr 'istr' '0123')" | bc | tr '01234567' 'bcehlost'
