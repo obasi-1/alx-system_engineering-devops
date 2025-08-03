@@ -1,2 +1,2 @@
 #!/bin/bash
-echo "obase=8; ibase=5; $(echo "$WATER" | tr 'aertw' '01234') + ibase=4; $(echo "$STIR" | tr 'istr' '0123')" | bc | tr '01234567' 'bcehlost'
+echo "5i $(echo $WATER | tr 'water' '01234') 4i $(echo $STIR | tr 'stir' '0123' | tr '.' '.') + 8o p" | dc | cut -d. -f1 | xargs -I {} echo "8o {} p" | dc | tr '01234567' 'bestchol'
