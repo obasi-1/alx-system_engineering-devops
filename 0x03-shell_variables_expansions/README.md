@@ -1,10 +1,10 @@
-0x03. Shell, init files, variables and expansions
+# 0x03. Shell, init files, variables and expansions
 
-Task 0: Create an alias
+# Task 0: Create an alias
 
 This project contains a script named 0-alias that creates a shell alias in the current terminal session.
 
-Description of the script
+# Description of the script
 
 The script sets up an alias that maps the command ls to rm *.
 
@@ -12,7 +12,7 @@ Alias Name: ls
 
 Alias Value: rm *
 
-How to Use
+# How to Use
 
 To apply the alias, you must source the script in your terminal:
 
