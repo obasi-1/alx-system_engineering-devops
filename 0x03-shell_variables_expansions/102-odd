@@ -1,2 +1,2 @@
 #!/bin/bash
-sed '1~2!d'
+paste - - | cut -f1
