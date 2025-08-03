@@ -1,0 +1,6 @@
+#!/bin/bash
+# This script prints "hello" followed by the current user's name.
+
+# The $USER variable holds the name of the current user.
+# The `echo` command prints the string to standard output.
+echo "hello $USER"
