@@ -1,2 +1,2 @@
-#!//bin/bash
+#!/bin/bash
 value=$(( $(expr index "$base_chars" "$char") - 1 ))
