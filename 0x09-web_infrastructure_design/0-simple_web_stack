@@ -1,0 +1,81 @@
+# 0-simple_web_stack
+
+## Simple Web Infrastructure Design
+
+### 1. User Journey
+1. A user types **`www.foobar.com`** in their browser.
+2. The browser queries the **DNS** to resolve `www.foobar.com` to an IP address.
+3. DNS returns **`8.8.8.8`** — the IP of our single server.
+4. The browser sends an **HTTP request** to **8.8.8.8** over the internet.
+5. The request reaches the **Nginx web server** running on our server.
+6. Nginx serves static files directly or forwards dynamic requests to the **application server**.
+7. The **application server** executes the **application code**, retrieves data from the **MySQL database**, and returns the results to Nginx.
+8. Nginx sends the final **HTML response** back to the user’s browser.
+
+---
+
+### 2. Components
+
+- **Server**  
+  A physical or virtual machine that stores your files, runs your web services, and responds to client requests over the internet.
+
+- **Domain Name**  
+  `foobar.com` — a human-friendly address that maps to your server’s IP address so users don’t need to remember numbers.
+
+- **DNS Record**  
+  `www` is an **A record** that maps `www.foobar.com` to `8.8.8.8`.
+
+- **Web Server (Nginx)**  
+  Handles incoming HTTP requests, serves static files, and passes dynamic requests to the application server.
+
+- **Application Server**  
+  Runs the website’s backend code, processes logic, and interacts with the database (e.g., PHP-FPM, Gunicorn, uWSGI).
+
+- **Application Files (Code Base)**  
+  The source code that defines the website’s content and behavior (HTML, CSS, JS, server-side scripts).
+
+- **Database (MySQL)**  
+  Stores and retrieves structured application data.
+
+- **Communication Protocol**  
+  The server communicates with the user’s browser using **HTTP** or **HTTPS**.
+
+---
+
+### 3. Infrastructure Diagram
+
+User Browser
+|
+v
+DNS (A record: www.foobar.com → 8.8.8.8)
+|
+v
+┌────────────────────────────┐
+| Single Server |
+| IP: 8.8.8.8 |
+| ┌───────────────┐ |
+| | Nginx | |
+| └───────┬───────┘ |
+| v |
+| Application Server |
+| (runs app code) |
+| | |
+| v |
+| MySQL DB |
+└────────────────────────────┘
+
+
+---
+
+### 4. Limitations / Issues
+
+- **SPOF (Single Point of Failure)**  
+  If this server goes down, the whole site is unavailable.
+
+- **Downtime During Maintenance**  
+  Restarting the server (e.g., after code deployment) will cause temporary downtime.
+
+- **Scalability Limitations**  
+  The single server can only handle limited traffic. Heavy loads could slow it down or crash it.
+
+---
