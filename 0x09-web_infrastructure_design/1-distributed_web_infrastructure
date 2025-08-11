@@ -1,0 +1,88 @@
+# 1-distributed_web_infrastructure
+
+## Distributed Web Infrastructure Design
+
+### 1. Overview
+This design uses **three servers** to host `www.foobar.com`, improving availability, scalability, and fault tolerance compared to a single-server setup.
+
+---
+
+### 2. Components and Roles
+
+- **2 Web/Application Servers (Server A & Server B)**  
+  Both run:
+  - **Nginx** as the web server to handle HTTP requests and serve static files.
+  - The **application server** to execute backend code and handle business logic.
+  - A copy of the **application files** (code base).
+
+  **Reason for adding:**  
+  - Increases capacity to handle more traffic.  
+  - Improves fault tolerance — if one server goes down, the other can still serve requests.
+
+- **1 Load Balancer (HAProxy)**  
+  Distributes incoming traffic between the two web/application servers.
+
+  **Reason for adding:**  
+  - Prevents overloading one server.  
+  - Ensures high availability by rerouting traffic when a server fails.
+
+  **Load Balancer Algorithm:**  
+  - **Round Robin** — sends each new request to the next server in the list, cycling evenly. This ensures a balanced distribution of load over time.
+
+  **Setup Mode:**  
+  - **Active-Active** — both servers handle requests simultaneously.  
+    **Difference:**  
+    - *Active-Active*: All servers share the workload at the same time.  
+    - *Active-Passive*: One server handles all requests while the other remains on standby and takes over only if the active server fails.
+
+- **1 Database Server (MySQL Primary-Replica cluster)**  
+  - **Primary Node (Master)**: Handles all write operations (INSERT, UPDATE, DELETE).  
+  - **Replica Node (Slave)**: Receives data updates from the primary via replication and serves read-only queries.
+
+  **Reason for adding:**  
+  - Reduces read load on the primary server by offloading read operations to the replica.  
+  - Improves fault tolerance — if the primary fails, the replica can be promoted.
+
+---
+
+### 3. How the Primary-Replica Cluster Works
+- The **primary** logs all changes (binlog) and sends them to the **replica**.  
+- The replica continuously applies these changes, keeping data synchronized.  
+- The application is configured to:
+  - Send **writes** to the primary.
+  - Send **reads** to the replica.
+
+---
+
+### 4. Infrastructure Diagram
+
+       User Browser
+            |
+            v
+      DNS (A record)
+            |
+            v
+    ┌─────────────────┐
+    |   Load Balancer  |
+    |    (HAProxy)     |
+    └───────┬─────────┘
+            |
+ ┌──────────┴──────────┐
+ v                     v
+
+---
+
+### 5. Issues with This Infrastructure
+
+- **SPOF (Single Points of Failure)**  
+  - Load balancer is a SPOF — if it fails, the whole site becomes unavailable.
+  - Primary database is a SPOF — if it fails and replica is not promoted quickly, writes fail.
+
+- **Security Issues**  
+  - No firewall: All servers are exposed directly to the internet.
+  - No HTTPS: Data is transmitted unencrypted between client and server.
+
+- **No Monitoring**  
+  - No system in place to detect failures, measure performance, or send alerts.
+
+---
