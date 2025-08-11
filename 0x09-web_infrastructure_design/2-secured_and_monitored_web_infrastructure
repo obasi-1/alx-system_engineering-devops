@@ -1,0 +1,99 @@
+# 2-secured_and_monitored_web_infrastructure
+
+## Secured and Monitored Web Infrastructure Design
+
+### 1. Overview
+This design builds on the distributed infrastructure but adds **security** (firewalls, HTTPS) and **monitoring** (data collectors), while keeping the 3-server setup for `www.foobar.com`.
+
+---
+
+### 2. Components and Roles
+
+- **3 Firewalls**  
+  - One in front of the **load balancer**.  
+  - One in front of each **web/application server**.  
+  **Reason for adding:**  
+  - Restrict incoming and outgoing network traffic based on rules.  
+  - Protect servers from unauthorized access and attacks.
+
+- **SSL Certificate (HTTPS)**  
+  - Installed on the load balancer to encrypt traffic between users and the site.  
+  **Reason for adding:**  
+  - Ensures data is transmitted securely.  
+  - Protects user privacy and prevents data tampering.
+
+- **3 Monitoring Clients**  
+  - One installed on each server.  
+  - Collects metrics such as CPU usage, memory, disk, network traffic, and application-specific metrics.  
+  - Sends data to a monitoring service (e.g., Sumo Logic, Datadog, Prometheus).  
+  **Reason for adding:**  
+  - Detect performance issues early.  
+  - Get alerts for downtime or abnormal activity.
+
+---
+
+### 3. What the New Elements Do
+
+- **Firewalls**  
+  - Act as a barrier between trusted internal network and untrusted external network.  
+  - Allow only necessary ports (e.g., 80 for HTTP, 443 for HTTPS, 3306 for MySQL internal traffic).
+
+- **Why Serve Over HTTPS**  
+  - Encrypts data in transit to prevent eavesdropping.  
+  - Provides authentication (verifies the site is genuine).  
+  - Builds user trust.
+
+- **Monitoring**  
+  - Helps track health, performance, and security of servers and applications.  
+  - Allows for proactive fixes before users notice issues.
+
+- **How Monitoring Tool Collects Data**  
+  - The monitoring client runs on each server.  
+  - Periodically collects metrics and sends them to a central monitoring service via secure protocols.
+
+- **Monitoring Web Server QPS (Queries Per Second)**  
+  - Configure the monitoring client to capture HTTP request rates from Nginx logs or built-in metrics.  
+  - Create a dashboard in the monitoring service to track QPS in real time.
+
+---
+
+### 4. Infrastructure Diagram
+
+        Internet
+            |
+       Firewall #1
+            |
+      ┌─────────────┐
+      | LoadBalancer | -- SSL Cert
+      |   HAProxy    |
+      └──────┬──────┘
+             |
+    ┌────────┴────────┐
+Firewall #2 Firewall #3
+| |
+┌─────────────┐ ┌─────────────┐
+| Web/App Srv | | Web/App Srv |
+| + Monitor | | + Monitor |
+└──────┬──────┘ └──────┬──────┘
+| |
+└─────────┬───────────┘
+|
+MySQL Primary
++ Monitor
+|
+MySQL Replica
+---
+
+### 5. Issues with This Infrastructure
+
+- **SSL Termination at Load Balancer**  
+  - Traffic between load balancer and web servers is unencrypted, making it vulnerable if the internal network is compromised.
+
+- **Only One MySQL Server Accepting Writes**  
+  - The primary is a single point of failure for writes. If it goes down, no data changes can be made until failover.
+
+- **Identical Servers (All Components Installed)**  
+  - Security risk: If one server is compromised, attacker may gain access to all roles (web, app, DB).  
+  - Maintenance risk: Updates or patches could affect multiple critical services at once.
+
+---
