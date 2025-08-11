@@ -1,0 +1,88 @@
+# 3-scale_up
+
+## Scaled-Up Web Infrastructure Design
+
+### 1. Overview
+This design improves on the previous infrastructures by **scaling horizontally** (adding more servers) and **splitting responsibilities** between specialized servers for better performance, security, and maintainability.
+
+---
+
+### 2. Components and Roles
+
+- **New Server (HAProxy Load Balancer #2)**  
+  - Configured in a **cluster** with the existing load balancer for redundancy.
+  - Uses a **failover or high-availability setup** (e.g., VRRP via Keepalived).
+  **Reason for adding:**  
+  - Eliminates the load balancer as a single point of failure.
+  - Ensures continuous service availability if one load balancer fails.
+
+- **Dedicated Web Server**  
+  - Runs **Nginx** only.
+  - Serves static content (HTML, CSS, JS, images).
+  **Reason for adding:**  
+  - Isolating the web layer improves performance and security.
+  - Reduces load on application servers.
+
+- **Dedicated Application Server**  
+  - Runs the backend code (e.g., via Gunicorn, uWSGI, or PHP-FPM).
+  **Reason for adding:**  
+  - Isolating application logic improves scalability.
+  - Allows independent scaling of the application layer.
+
+- **Dedicated Database Server (MySQL)**  
+  - Stores and manages data.
+  **Reason for adding:**  
+  - Prevents database workload from impacting web/application performance.
+  - Allows independent tuning and scaling of the database layer.
+
+---
+
+### 3. How Components Work Together
+1. User requests `www.foobar.com` in the browser.
+2. DNS resolves the domain to the **public IP shared by the two clustered load balancers**.
+3. One active load balancer (HAProxy) routes the request using **Round Robin** or **Least Connections** algorithm.
+4. The request reaches the **web server** for static content or is forwarded to the **application server** for dynamic processing.
+5. The application server queries the **database server** if needed.
+6. The processed response flows back through the load balancer to the user.
+
+---
+
+### 4. Application Server vs Web Server
+
+- **Web Server (Nginx, Apache)**  
+  - Handles HTTP requests directly from clients.  
+  - Serves **static content** (HTML, CSS, JS, images).  
+  - Acts as a reverse proxy to pass dynamic requests to the application server.
+
+- **Application Server (Gunicorn, uWSGI, PHP-FPM)**  
+  - Executes **backend application code**.  
+  - Processes business logic, interacts with databases, and generates dynamic content.  
+  - Does not usually serve static files.
+
+---
+
+### 5. Infrastructure Diagram
+
+       Internet
+           |
+   ┌────────┴────────┐
+   |  LB #1 (HAProxy) |
+   |  LB #2 (HAProxy) |
+   └───────┬─────────┘
+           |
+     ┌─────┴─────┐
+     v           v
+Web Server Application Server
+| |
+└───────┬───────┘
+|
+Database Server
+---
+
+### 6. Benefits of Scaling Up
+- **High Availability**: Load balancer redundancy avoids SPOF.
+- **Better Performance**: Specialized servers optimize resource usage.
+- **Easier Maintenance**: Independent upgrades or restarts per layer.
+- **Scalability**: Each layer can be scaled horizontally as traffic grows.
+
+---
